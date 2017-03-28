@@ -2,9 +2,14 @@ package at.fhj.swd;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,7 +22,13 @@ import at.fhj.swd.OrderItem;
 public class OrderProcessing {
 
 	private static String logFile = System.getProperty("user.dir") + "/log.txt";
-	/*
+	private static File folder;
+	
+	/**
+	 * Create a Dummy Order with Customer and one Order Item for testing
+	 * @return order ... Dummy Order
+	 */
+	
 	private static Order createDummyOrders() {
 		Customer customer = new Customer ("Andreas", "Dietler", "Somewhere", "over the Rainbow", "666", "Austr(al)ia");
 		ArrayList<OrderItem> items = new ArrayList<>();
@@ -25,18 +36,21 @@ public class OrderProcessing {
 		Order order = new Order(1000001, customer, items);
 		return order;
 	}
-	*/
-	// liest die Bestellung aus dem CSV-Datei
-	private static Order readOrder(String fileName) {
+	
+	/**
+	 * Read CSV-File with Order Information (Customer, Order Item ...)
+	 * File can be found anywhere on the File System.
+	 * @param fileName ... Path where the order can be found
+	 * @return parsed file with Order inforamtion
+	 */
+	private static Order readOrder(File fileName) {
 		Order readOrder = null;
 		Customer readCustomer = null;
 		ArrayList<OrderItem> readItems = new ArrayList<OrderItem>();
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new FileReader(fileName));
+			reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF8"));
 			String line = null;
-			/* Kann die Zeilennummer aus dem File ausgelesen werden?
-			 */
 			// gibt die anzahl der gelesen Zeilennummern an
 			int index = 1;
 			String[] fullName = reader.readLine().split(" ");
@@ -50,7 +64,6 @@ public class OrderProcessing {
 			String country = reader.readLine();
 			index++;
 			readCustomer = new Customer(fullName[0], fullName[1], address, zipCode, city, country);
-			
 			// es wird Zeile fuer Zeile eingelesen bis keine mehr vorhanden ist.
 			String header[] = reader.readLine().split(";");
 			if(checkCSV(header)) {
@@ -63,7 +76,7 @@ public class OrderProcessing {
 						String name = splited[1];
 						float price = Float.parseFloat(splited[2]);
 						int quantity = Integer.parseInt(splited[3]);
-						// Erstellen eines neuen Countries und übergeben der gelesenen Werte
+						// Erstellen eines neuen Order Items und Uebergeben der gelesenen Werte
 						readItems.add(new OrderItem(articleNumber, name, price, quantity));
 					} catch (Exception error) {
 						System.out.println("Fehlerhafte Werte in Zeile " + index + ".");
@@ -90,11 +103,17 @@ public class OrderProcessing {
 		}	
 		return readOrder;
 	}
-	// schreibt die Bestellung in eine HTML-Datei
-	private static void HTMLWriter(Order order) {
+	
+	private static void HTMLWriter(String FileName, Order order) {
 		PrintWriter writer = null;
 		try {
-			writer = new PrintWriter(new FileOutputStream("C:\\temp\\order\\test"));
+			/* Da die Codierung mit dem FileReader nicht korrekt funktioniert
+			 * und anscheinend nicht umgestellt werden konnte, wurde ein
+			 * FileInputStream und InputStreamReader verwendet.
+			 */
+			// writer = new PrintWriter(new FileOutputStream("C:\\temp\\order\\test"));
+			writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(FileName), "UTF-8"));
+			
 			
 			// Header wird eingefuegt
 			writer.println(dietlera15HTML.getHeader());
@@ -105,11 +124,11 @@ public class OrderProcessing {
 				+ "\t</header>\n\n\n"
 				+ "\t<main>\n"
 					+ "\t\t<h3>Adresse:</h3>\n"
-					+ customerToHTML(order.getCustomer().getFirstName() + " " + order.getCustomer().getLastName())
-					+ customerToHTML(order.getCustomer().getAddress())
-					+ customerToHTML(order.getCustomer().getZipCode())
-					+ customerToHTML(order.getCustomer().getCity())
-					+ customerToHTML(order.getCustomer().getCountry())
+					+ dietlera15HTML.customerToHTML(order.getCustomer().getFirstName() + " " + order.getCustomer().getLastName())
+					+ dietlera15HTML.customerToHTML(order.getCustomer().getAddress())
+					+ dietlera15HTML.customerToHTML(order.getCustomer().getZipCode())
+					+ dietlera15HTML.customerToHTML(order.getCustomer().getCity())
+					+ dietlera15HTML.customerToHTML(order.getCustomer().getCountry())
 					+ "\n"
 					+ "\t\t<table>\n"
 						+ "\t\t\t<thead>\n"
@@ -134,7 +153,7 @@ public class OrderProcessing {
 							+ "\t\t\t\t<td>" + order.getOrderItem().get(i).getArticleNumber() + "</td>\n"
 							+ "\t\t\t\t<td>" + order.getOrderItem().get(i).getName() + "</td>\n"
 							+ "\t\t\t\t<td>" + order.getOrderItem().get(i).getPrice() + "</td>\n"
-							+ "\t\t\t\t<td>" + order.getOrderItem().get(i).getPrice() + "</td>\n"
+							+ "\t\t\t\t<td>" + order.getOrderItem().get(i).getQuantity() + "</td>\n"
 							+ "\t\t\t\t<td>" + order.getOrderItem().get(i).calcTotal() + "</td></tr>\n");
 			}		
 			
@@ -159,11 +178,10 @@ public class OrderProcessing {
 		}
 	}
 	
-	public static String customerToHTML(String text) {
-		text = "\t\t<h4>" + text + "</h4>\n";
-		return text;
-	}
-	// Schreibt eine Fehlermeldung in das Log-File
+	/**
+	 * writes a exception into a log file with actual date and time
+	 * @param message for log file
+	 */
 	private static void LogFileWriter(Exception msg){
 		PrintWriter writer = null;
 		try {
@@ -184,7 +202,11 @@ public class OrderProcessing {
 			}
 		}
 	}
-	// Schreibt eine Meldung in das Log-File
+
+	/**
+	 * writes a message into a log file with actual date and time
+	 * @param message for log file
+	 */
 	private static void LogFileMessage(String msg){
 		PrintWriter writer = null;
 		try {
@@ -206,23 +228,34 @@ public class OrderProcessing {
 		}
 	}
 	
+	
 	public static void main(String[] args) {
 		if(args.length == 1) {
-			File folder = new File(args[0]);
+			folder = new File(args[0]);
 			File[] listOfFiles = folder.listFiles();
-			listOfFiles[0].getName();
-			for(int i=0; i < listOfFiles.length; i++) {
-				String FileName = listOfFiles[i].getAbsolutePath();
-				System.out.println(listOfFiles[i].getAbsolutePath());
-				Order order = readOrder(FileName);
-				HTMLWriter(order);
+			for(int i = 0; i < listOfFiles.length; i++) {
+				if(listOfFiles[i].getName().endsWith(".csv")) {
+					logFile = listOfFiles[i].getParentFile() + "\\"
+							+ listOfFiles[i].getName().replaceFirst(".csv", "_log.txt");
+					Order order = readOrder(listOfFiles[i]);
+					System.out.println(logFile);
+					String Destination = listOfFiles[i].getParentFile()
+							+ "\\"
+							+ listOfFiles[i].getName().replaceFirst(".csv", ".xhtml");
+					HTMLWriter(Destination, order);
+				}
 			}
 		}
 		// Order order = createDummyOrders();
 		// float total = order.getTotalSum();
 		// System.out.println("Total price: " + total);
 	}
-	// Ueberpruefen ob alle Spalten im CSV File enthalten sind
+	
+	/**
+	 * check every parameter of the CSV-File
+	 * @param first string of file
+	 * @return header is ok
+	 */
 	private static boolean checkCSV(String[] header){
 		boolean[] col = new boolean[] {false, false, false, false};
 		if(header.length != 4) return false;
@@ -232,7 +265,11 @@ public class OrderProcessing {
 		if(header[3].equals("quant")) col[3] = true;
 		return (col[0] && col[1] && col[2] && col[3]);
 	}
-	// Ausgabe des aktuellen Datums und der Zeit
+	
+	/**
+	 * create actual date and time
+	 * @return actual date and time
+	 */
 	private static String actualDateTime() {
 		SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date now = new Date();

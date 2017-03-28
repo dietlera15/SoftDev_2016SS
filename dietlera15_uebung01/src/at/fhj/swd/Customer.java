@@ -1,3 +1,10 @@
+/**
+ * My Customer Class
+ * 
+ * @author andreas
+ * @version 0.1a Build 0001 May 6, 2016.
+ */
+
 package at.fhj.swd;
 
 public class Customer {
@@ -8,7 +15,7 @@ public class Customer {
 	private String city;
 	private String zipCode;
 	private String country;
-	
+
 	public Customer(String firstName, String lastName, String address, String city, String zipCode, String country) {
 		setFirstName(firstName);
 		setLastName(lastName);

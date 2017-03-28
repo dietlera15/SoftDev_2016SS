@@ -1,7 +1,18 @@
+/**
+ * My HTML
+ * 
+ * @author andreas
+ * @version 0.1a Build 0001 May 6, 2016.
+ */
+
 package at.fhj.swd;
 
 public class dietlera15HTML {
-
+	
+	/**
+	 * 
+	 * @return HTML Header as a String
+	 */
 	public static String getHeader(){
 		return "<!DOCTYPE html>\n"
 				+ "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">\n"
@@ -14,6 +25,10 @@ public class dietlera15HTML {
 				+ "</head>\n";
 	}
 	
+	/**
+	 * 
+	 * @return Style Sheet in an  HTML-Tag as a String
+	 */
 	public static String getStyleShit() {
 		return "\t<style>\n"
 				+ ".low {color: red;}"
@@ -22,6 +37,10 @@ public class dietlera15HTML {
 			+ "\t</style>\n";
 	}
 	
+	/**
+	 * 
+	 * @return HTML Footer as a String
+	 */
 	public static String getFooter(){
 		return "\t<footer>\n"
 				+ "\t\t<h6>Andreas Dietler<br></br>\n"
@@ -31,5 +50,14 @@ public class dietlera15HTML {
 			+ "\t</footer>\n"
 		+ "</body>\n"
 		+ "</html>\n";
+	}
+	
+	/**
+	 * format customer into HTML
+	 * @param customer Text
+	 * @return text in HTML-Format
+	 */
+	public static String customerToHTML(String text) {
+		return "\t\t<h4>" + text + "</h4>\n";
 	}
 }

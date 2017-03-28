@@ -50,14 +50,7 @@ public class Order {
 	}
 
 	public void setOrderItem(ArrayList<OrderItem> orderItem) {
-		if(orderItem == null || orderItem.isEmpty()) {
-			throw new IllegalArgumentException("Order must not be null");
-		}
+		if(orderItem == null || orderItem.isEmpty())
 		this.orderItem = orderItem;
 	}
-
-	
-
-
-	
 }
